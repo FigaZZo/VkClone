@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">VkClone</string>
+    <string name="post_text">Maecenas a elit venenatis, tristique tellus sed, facilisis mi. Morbi sed lorem nec purus efficitur imperdiet a ac quam. Sed ut eleifend urna, non accumsan erat. Morbi iaculis ante augue, et venenatis justo tincidunt sed. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut et aliquam leo. Ut vulputate odio feugiat, tincidunt metus auctor, maximus felis. Aliquam venenatis erat sapien, in placerat nulla ornare id.</string>
+    <string name="navigation_item_main">Главная</string>
+    <string name="navigation_item_favourite">Избранное</string>
+    <string name="navigation_item_profile">Профиль</string>
+</resources>
