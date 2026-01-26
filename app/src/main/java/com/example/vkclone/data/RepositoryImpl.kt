@@ -1,6 +1,7 @@
 package com.example.vkclone.data
 
 import com.example.vkclone.R
+import com.example.vkclone.domain.Comment
 import com.example.vkclone.domain.FeedPost
 import com.example.vkclone.domain.StatisticItem
 import com.example.vkclone.domain.StatisticType
@@ -23,6 +24,12 @@ object RepositoryImpl: VkRepository {
                     StatisticItem(type = StatisticType.LIKES, 27)
                 )
             )
+        }
+    }
+
+    override fun getComments(): List<Comment> {
+        return List(100) {
+            Comment(it)
         }
     }
 

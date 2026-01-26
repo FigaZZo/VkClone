@@ -1,27 +1,32 @@
 package com.example.vkclone.presentation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.vkclone.navigation.AppNavGraph
+import com.example.vkclone.navigation.NavigationState
+import com.example.vkclone.navigation.rememberNavigationState
+import com.example.vkclone.presentation.mainscreen.MainScreen
 import com.example.vkclone.ui.theme.VkCloneTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,29 +34,28 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val navigationState = rememberNavigationState()
+
             VkCloneTheme(dynamicColor = false) {
+                var topBarChangeable = remember {
+                    mutableStateOf<@Composable () -> Unit>({})
+                }
                 Scaffold(
-                    bottomBar = { BottomNavigationBar() },
+                    topBar = topBarChangeable.value,
+                    bottomBar = { BottomNavigationBar(navigationState) },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    val viewmodel = ViewModelProvider(this)[MainViewModel::class]
-                    val posts = viewmodel.posts.observeAsState(listOf())
-                    LazyColumn(modifier = Modifier.padding(innerPadding)) {
-                        items(
-                            items = posts.value,
-                            key = { it.id }
-                        ) { post ->
-                            SwipablePostCard(
-                                post,
-                                onPressStatistics = { post, item ->
-                                    viewmodel.updateWatched(post, item)
-                                },
-                                onDeletePost = { post ->
-                                    viewmodel.remove(post)
-                                }
+                    AppNavGraph(
+                        navigationState.navHostController,
+                        onNewsFeedScreen = {
+                            MainScreen(
+                                innerPadding,
+                                setTopBar = { topBarChangeable.value = it }
                             )
-                        }
-                    }
+                        },
+                        onFavoriteScreen = { TextCounter("hello favorite") { topBarChangeable.value = it } },
+                        onProfileScreen = { TextCounter("hey profile") { topBarChangeable.value = it } },
+                    )
                 }
             }
         }
@@ -59,20 +63,22 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BottomNavigationBar() {
+fun BottomNavigationBar(
+    navigationState: NavigationState
+) {
+    Log.d("BottomNavigationBar", "RECOMPOSITION")
     val items = listOf(
         NavigationItem.Home,
         NavigationItem.Favourite,
         NavigationItem.Profile
     )
-    var selectedItem = remember {
-        mutableStateOf(NavigationItem.Home.titleResId)
-    }
-    NavigationBar() { 
-        items.forEach {item ->
+    val backStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
+    val selectedItem = backStackEntry?.destination?.route
+    NavigationBar() {
+        items.forEach { item ->
             NavigationBarItem(
-                selected = item.titleResId == selectedItem.value,
-                onClick = { selectedItem.value = item.titleResId },
+                selected = item.screen.route == selectedItem,
+                onClick = { navigationState.navigateTo(item.screen.route) },
                 icon = { Icon(item.icon, contentDescription = null) },
                 label = { Text(text = stringResource(id = item.titleResId)) },
             )
@@ -81,17 +87,21 @@ fun BottomNavigationBar() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+private fun TextCounter(
+    name: String,
+    setTopBar: (@Composable () -> Unit) -> Unit
+) {
+    Log.d("TextCounter", "RECOMPOSITION")
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    VkCloneTheme {
-        Greeting("Android")
+    var count by rememberSaveable {
+        mutableIntStateOf(0)
     }
+
+    setTopBar {}
+
+    Text(
+        modifier = Modifier.clickable { count++ },
+        text = "$name Count: $count",
+        color = Color.Black
+    )
 }

@@ -1,6 +1,5 @@
-package com.example.vkclone.presentation
+package com.example.vkclone.presentation.mainscreen
 
-import android.R.attr.animationDuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -77,13 +76,14 @@ val testFeedPost = FeedPost(
     )
 )
 
-val testFunction = fun(a: FeedPost, b: StatisticItem) {}
+val testFunction1 = fun(a: FeedPost, b: StatisticItem) {}
+val testFunction2 = fun(a: FeedPost) {}
 
 @Preview
 @Composable
 fun PostCardLightTheme() {
     VkCloneTheme(dynamicColor = false) {
-        PostCard(testFeedPost, testFunction)
+        PostCard(testFeedPost, testFunction1, testFunction2)
     }
 }
 
@@ -91,7 +91,7 @@ fun PostCardLightTheme() {
 @Composable
 fun PostCardDarkTheme() {
     VkCloneTheme(true, false) {
-        PostCard(testFeedPost, testFunction)
+        PostCard(testFeedPost, testFunction1, testFunction2)
     }
 }
 
@@ -99,7 +99,8 @@ fun PostCardDarkTheme() {
 fun SwipablePostCard(
     post: FeedPost,
     onPressStatistics: (FeedPost, StatisticItem) -> Unit,
-    onDeletePost: (FeedPost) -> Unit
+    onDeletePost: (FeedPost) -> Unit,
+    onPressComment: (FeedPost) -> Unit
 ) {
     var isRemoved by remember {
         mutableStateOf(false)
@@ -135,7 +136,7 @@ fun SwipablePostCard(
             swipeState,
             { DeleteBackground(swipeState) },
         ) {
-            PostCard(post, onPressStatistics)
+            PostCard(post, onPressStatistics, onPressComment)
         }
     }
 }
@@ -169,7 +170,8 @@ private fun DeleteBackground(
 @Composable
 private fun PostCard(
     post: FeedPost,
-    onPressStatistics: (FeedPost, StatisticItem) -> Unit
+    onPressStatistics: (FeedPost, StatisticItem) -> Unit,
+    onPressComment: (FeedPost) -> Unit
 ) {
     Card(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary),
@@ -196,7 +198,7 @@ private fun PostCard(
                     .fillMaxWidth()
             )
             Spacer(Modifier.height(5.dp))
-            StatisticsPost(post, onPressStatistics)
+            StatisticsPost(post, onPressStatistics, onPressComment)
         }
     }
 }
@@ -239,7 +241,11 @@ private fun HeaderPost(post: FeedPost) {
 }
 
 @Composable
-private fun StatisticsPost(post: FeedPost, onPressStatistics: (FeedPost, StatisticItem) -> Unit) {
+private fun StatisticsPost(
+    post: FeedPost,
+    onPressStatistics: (FeedPost, StatisticItem) -> Unit,
+    onPressComment: (FeedPost) -> Unit
+) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.fillMaxWidth()
@@ -249,35 +255,35 @@ private fun StatisticsPost(post: FeedPost, onPressStatistics: (FeedPost, Statist
                 StatisticType.SHARES -> Row(modifier = Modifier.weight(0.5f)) {
                     IconWithText(
                         Icons.Outlined.Share,
-                        post,
                         it,
-                        onPressStatistics
-                    )
+                    ) {
+                        onPressStatistics(post, it)
+                    }
                 }
                 StatisticType.COMMENTS -> Row(modifier = Modifier.weight(0.5f)) {
                     IconWithText(
                         Icons.AutoMirrored.Filled.Comment,
-                        post,
                         it,
-                        onPressStatistics
-                    )
+                    ) {
+                        onPressComment(post)
+                    }
                 }
                 StatisticType.LIKES -> Row(modifier = Modifier.weight(0.5f)) {
                     IconWithText(
                         Icons.Outlined.FavoriteBorder,
-                        post,
                         it,
-                        onPressStatistics
-                    )
+                    ) {
+                        onPressStatistics(post, it)
+                    }
                 }
 
                 StatisticType.VIEWS -> Row(modifier = Modifier.weight(1.5f)) {
                     IconWithText(
                         Icons.Filled.RemoveRedEye,
-                        post,
                         it,
-                        onPressStatistics
-                    )
+                    ) {
+                        onPressStatistics(post, it)
+                    }
                 }
             }
         }
@@ -287,14 +293,13 @@ private fun StatisticsPost(post: FeedPost, onPressStatistics: (FeedPost, Statist
 @Composable
 private fun IconWithText(
     imageVector: ImageVector,
-    post: FeedPost,
     item: StatisticItem,
-    onPressStatistics: (FeedPost, StatisticItem) -> Unit
+    onPressStatistics: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .clickable(true){
-                onPressStatistics(post, item)
+                onPressStatistics()
             }
     ) {
         Icon(
