@@ -12,5 +12,7 @@ sealed class Screen(
         private const val ROUTE_NEWS_FEED = "news_feed"
         private const val ROUTE_FAVOURITE = "favourite"
         private const val ROUTE_PROFILE = "profile"
+        private const val ROUTE_HOME = "home"
+        private const val ROUTE_COMMENTS = "comments"
     }
 }

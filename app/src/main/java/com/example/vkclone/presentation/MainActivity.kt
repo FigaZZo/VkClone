@@ -26,7 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.vkclone.navigation.AppNavGraph
 import com.example.vkclone.navigation.NavigationState
 import com.example.vkclone.navigation.rememberNavigationState
-import com.example.vkclone.presentation.mainscreen.MainScreen
+import com.example.vkclone.presentation.mainscreen.HomeScreen
 import com.example.vkclone.ui.theme.VkCloneTheme
 
 class MainActivity : ComponentActivity() {
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
                     AppNavGraph(
                         navigationState.navHostController,
                         onNewsFeedScreen = {
-                            MainScreen(
+                            HomeScreen(
                                 innerPadding,
                                 setTopBar = { topBarChangeable.value = it }
                             )

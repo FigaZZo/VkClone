@@ -81,22 +81,22 @@ val testFunction2 = fun(a: FeedPost) {}
 
 @Preview
 @Composable
-fun PostCardLightTheme() {
+fun NewsFeedCardLightTheme() {
     VkCloneTheme(dynamicColor = false) {
-        PostCard(testFeedPost, testFunction1, testFunction2)
+        NewsFeedCard(testFeedPost, testFunction1, testFunction2)
     }
 }
 
 @Preview
 @Composable
-fun PostCardDarkTheme() {
+fun NewsFeedCardDarkTheme() {
     VkCloneTheme(true, false) {
-        PostCard(testFeedPost, testFunction1, testFunction2)
+        NewsFeedCard(testFeedPost, testFunction1, testFunction2)
     }
 }
 
 @Composable
-fun SwipablePostCard(
+fun SweepableNewsFeedCard(
     post: FeedPost,
     onPressStatistics: (FeedPost, StatisticItem) -> Unit,
     onDeletePost: (FeedPost) -> Unit,
@@ -136,7 +136,7 @@ fun SwipablePostCard(
             swipeState,
             { DeleteBackground(swipeState) },
         ) {
-            PostCard(post, onPressStatistics, onPressComment)
+            NewsFeedCard(post, onPressStatistics, onPressComment)
         }
     }
 }
@@ -168,7 +168,7 @@ private fun DeleteBackground(
 }
 
 @Composable
-private fun PostCard(
+private fun NewsFeedCard(
     post: FeedPost,
     onPressStatistics: (FeedPost, StatisticItem) -> Unit,
     onPressComment: (FeedPost) -> Unit
