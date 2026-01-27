@@ -22,11 +22,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.vkclone.domain.FeedPost
 import com.example.vkclone.navigation.AppNavGraph
 import com.example.vkclone.navigation.NavigationState
 import com.example.vkclone.navigation.rememberNavigationState
 import com.example.vkclone.presentation.mainscreen.HomeScreen
+import com.example.vkclone.presentation.mainscreen.LaunchCommentScreen
 import com.example.vkclone.ui.theme.VkCloneTheme
 
 class MainActivity : ComponentActivity() {
@@ -40,6 +43,9 @@ class MainActivity : ComponentActivity() {
                 var topBarChangeable = remember {
                     mutableStateOf<@Composable () -> Unit>({})
                 }
+                var post = remember {
+                    mutableStateOf<FeedPost?>(null)
+                }
                 Scaffold(
                     topBar = topBarChangeable.value,
                     bottomBar = { BottomNavigationBar(navigationState) },
@@ -50,7 +56,19 @@ class MainActivity : ComponentActivity() {
                         onNewsFeedScreen = {
                             HomeScreen(
                                 innerPadding,
-                                setTopBar = { topBarChangeable.value = it }
+                                setTopBar = { topBarChangeable.value = it },
+                                onPressComment = {
+                                    post.value = it
+                                    navigationState.navigateToComments()
+                                }
+                            )
+                        },
+                        onCommentsScreen = {
+                            LaunchCommentScreen(
+                                innerPadding,
+                                post.value ?: error("Wrong post sent"),
+                                setTopBar = { topBarChangeable.value = it },
+                                onBackPressed = { navigationState.navHostController.popBackStack() }
                             )
                         },
                         onFavoriteScreen = { TextCounter("hello favorite") { topBarChangeable.value = it } },
@@ -72,12 +90,15 @@ fun BottomNavigationBar(
         NavigationItem.Favourite,
         NavigationItem.Profile
     )
+
     val backStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
-    val selectedItem = backStackEntry?.destination?.route
     NavigationBar() {
         items.forEach { item ->
+            var selectedItem = backStackEntry?.destination?.hierarchy?.any {
+                it.route == item.screen.route
+            } ?: false
             NavigationBarItem(
-                selected = item.screen.route == selectedItem,
+                selected = selectedItem,
                 onClick = { navigationState.navigateTo(item.screen.route) },
                 icon = { Icon(item.icon, contentDescription = null) },
                 label = { Text(text = stringResource(id = item.titleResId)) },
