@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.vkclone.domain.FeedPost
 
 class NavigationState(
     val navHostController: NavHostController
@@ -19,8 +20,11 @@ class NavigationState(
         }
     }
 
-    fun navigateToComments() {
-        navHostController.navigate(Screen.Comments.route)
+    fun navigateToComments(post: FeedPost) {
+        navHostController.currentBackStackEntry?.savedStateHandle?.set(Screen.KEY_FEED_POST, post)
+        navHostController.navigate(Screen.Comments.route) {
+            launchSingleTop = true
+        }
     }
 }
 

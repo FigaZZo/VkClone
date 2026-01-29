@@ -8,8 +8,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.vkclone.domain.FeedPost
 import com.example.vkclone.navigation.AppNavGraph
 import com.example.vkclone.navigation.NavigationState
 import com.example.vkclone.navigation.rememberNavigationState
@@ -43,9 +44,6 @@ class MainActivity : ComponentActivity() {
                 var topBarChangeable = remember {
                     mutableStateOf<@Composable () -> Unit>({})
                 }
-                var post = remember {
-                    mutableStateOf<FeedPost?>(null)
-                }
                 Scaffold(
                     topBar = topBarChangeable.value,
                     bottomBar = { BottomNavigationBar(navigationState) },
@@ -57,16 +55,15 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 innerPadding,
                                 setTopBar = { topBarChangeable.value = it },
-                                onPressComment = {
-                                    post.value = it
-                                    navigationState.navigateToComments()
+                                onPressComment = {post ->
+                                    navigationState.navigateToComments(post)
                                 }
                             )
                         },
-                        onCommentsScreen = {
+                        onCommentsScreen = {post ->
                             LaunchCommentScreen(
                                 innerPadding,
-                                post.value ?: error("Wrong post sent"),
+                                post,
                                 setTopBar = { topBarChangeable.value = it },
                                 onBackPressed = { navigationState.navHostController.popBackStack() }
                             )
@@ -95,13 +92,22 @@ fun BottomNavigationBar(
     NavigationBar() {
         items.forEach { item ->
             var selectedItem = backStackEntry?.destination?.hierarchy?.any {
+                Log.d("Navigation", "${it.route} ${item.screen.route}")
                 it.route == item.screen.route
             } ?: false
             NavigationBarItem(
                 selected = selectedItem,
-                onClick = { navigationState.navigateTo(item.screen.route) },
+                onClick = {
+                    if (!selectedItem) {
+                        navigationState.navigateTo(item.screen.route)
+                    }
+                },
                 icon = { Icon(item.icon, contentDescription = null) },
                 label = { Text(text = stringResource(id = item.titleResId)) },
+                colors = NavigationBarItemDefaults.colors().copy(
+                    selectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSecondary
+                )
             )
         }
     }

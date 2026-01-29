@@ -9,8 +9,8 @@ sealed class Screen(
     object Home : Screen(ROUTE_HOME)
     object Comments : Screen(ROUTE_COMMENTS)
 
-
     companion object {
+        const val KEY_FEED_POST = "feed_post_key"
         private const val ROUTE_NEWS_FEED = "news_feed"
         private const val ROUTE_FAVOURITE = "favourite"
         private const val ROUTE_PROFILE = "profile"
